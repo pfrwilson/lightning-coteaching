@@ -1,20 +1,30 @@
 
 data:
   use_augmentations: yes
-  root: '/Users/paulwilson/data/mnist/MNIST/processed'
+  root: '/Users/paulwilson/data/mnist'
   download: false
-  noise_rate: 0.5
+  noise_rate: 0.95
   seed: 0
   batch_size: 32
 
 model:
-  input_channel: 1
-  n_outputs: 10
-  dropout_rate: 0.25
-  top_bn: False
+  type: cnn
 
-system:
-  model:
+loss:
+  name: 'cross_entropy'
 
-  loss:
-    name: 'cross_entropy'
+opt_config:
+  final_forget_rate: 0.95
+  final_forget_rate_epoch: 20
+  lr: 1e-4
+
+mode: 'coteaching'
+
+trainer:
+  max_epochs: 50
+
+logger:
+  type: wandb
+  name: null
+  save_dir: null
+  project: coteaching
