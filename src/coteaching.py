@@ -33,7 +33,7 @@ class CoteachingModule(LightningModule):
         self.train_accuracy = Accuracy(num_classes=10)
         self.val_accuracy = Accuracy(num_classes=10)
 
-        self.automatic_optimization = False
+        #self.automatic_optimization = False
 
         self.save_hyperparameters()
 
@@ -44,27 +44,25 @@ class CoteachingModule(LightningModule):
 
         return [opt1, opt2]
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch, batch_idx, optimizer_idx):
         x, y = batch
 
         logits_1 = self.model1(x)
         logits_2 = self.model2(x)
 
-        loss_1, loss_2 = self.coteaching_loss(logits_1, logits_2, y)
+        losses = self.coteaching_loss(logits_1, logits_2, y)
 
-        opt1, opt2 = self.optimizers()
+        #opt_1.zero_grad()
+        #self.manual_backward(loss_2, retain_graph=True)
+        #opt_2.zero_grad()
+        #self.manual_backward(loss_2)
 
-        opt1.zero_grad()
-        opt2.zero_grad()
-        self.manual_backward(loss_1)
-        opt2.step()
+        #opt_1.step()
+        #opt_2.step()
 
-        opt1.zero_grad()
-        opt2.zero_grad()
-        self.manual_backward(loss_2, retain_graph=True)
-        opt2.step()
+        self.log_dict({'train/loss_1': losses[0], 'train/loss_2': losses[1]})
 
-        self.log_dict({'loss_1': loss_1, 'loss_2': loss_2})
+        return losses[optimizer_idx]
 
     def validation_step(self, batch, batch_idx):
 
@@ -82,11 +80,11 @@ class CoteachingModule(LightningModule):
 
         num_to_keep = int((1 - self.get_forget_rate()) * batch_size)
 
-        loss_1 = self.loss_fn(logits_1, targets)
-        loss_2 = self.loss_fn(logits_2, targets)
+        loss_1 = self.loss_fn(logits_1, targets).detach()
+        loss_2 = self.loss_fn(logits_2, targets).detach()
 
-        ind_1_sorted = torch.argsort(loss_1.data.cpu())
-        ind_2_sorted = torch.argsort(loss_2.data.cpu())
+        ind_1_sorted = torch.argsort(loss_1)
+        ind_2_sorted = torch.argsort(loss_2)
         loss_1_clean_indices = ind_1_sorted[:num_to_keep]
         loss_2_clean_indices = ind_2_sorted[:num_to_keep]
 
