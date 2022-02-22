@@ -1,0 +1,20 @@
+
+data:
+  use_augmentations: yes
+  root: '/Users/paulwilson/data/mnist/MNIST/processed'
+  download: false
+  noise_rate: 0.5
+  seed: 0
+  batch_size: 32
+
+model:
+  input_channel: 1
+  n_outputs: 10
+  dropout_rate: 0.25
+  top_bn: False
+
+system:
+  model:
+
+  loss:
+    name: 'cross_entropy'
