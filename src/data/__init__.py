@@ -2,11 +2,13 @@ import torchvision.transforms as T
 from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule
 
-from noisy_mnist import symmetric_flip_noisy_mnist
+from .noisy_mnist import symmetric_flip_noisy_mnist
+from .noisy_mnist import MNIST
 from typing import Optional
 from dataclasses import dataclass
 from hydra.core.config_store import ConfigStore
 from torch.utils.data import DataLoader
+import torch
 
 
 @dataclass
@@ -35,30 +37,40 @@ class DataModule(LightningDataModule):
             else T.Lambda(lambda im: im),
             T.ToTensor()
         ])
-        self.target_transform = T.ToTensor()
+        self.target_transform = T.Lambda(
+            lambda num: torch.tensor(num).long()
+        )
 
         self.train_ds = None
         self.test_ds = None
 
     def setup(self, stage: Optional[str] = None) -> None:
 
-        self.train_ds = symmetric_flip_noisy_mnist(
-            self.config.root,
-            transform=self.transform,
-            target_transform=self.target_transform,
-            download=self.config.download,
-            noise_rate=self.config.noise_rate,
-            seed=self.config.seed
-        )
+        if self.config.noise_rate == 0:
+            self.train_ds = MNIST(
+                self.config.root,
+                train=True,
+                transform=self.transform,
+                target_transform=self.target_transform,
+                download=self.config.download,
+            )
 
-        self.test_ds = symmetric_flip_noisy_mnist(
+        else:
+            self.train_ds = symmetric_flip_noisy_mnist(
+                self.config.root,
+                transform=self.transform,
+                target_transform=self.target_transform,
+                download=self.config.download,
+                noise_rate=self.config.noise_rate,
+                seed=self.config.seed
+            )
+
+        self.test_ds = MNIST(
             self.config.root,
             train=False,
             transform=self.transform,
             target_transform=self.target_transform,
             download=self.config.download,
-            noise_rate=self.config.noise_rate,
-            seed=self.config.seed
         )
 
     def train_dataloader(self) -> DataLoader:

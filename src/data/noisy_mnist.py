@@ -11,7 +11,7 @@ class LabelNoiseDataset(Dataset):
 
         self.clean_dataset = clean_dataset
         self.noise_transition_matrix = noise_transition_matrix
-        self.__labels = np.zeros(len(self.ds))
+        self.__labels = np.zeros(len(self.clean_dataset))
         self.seed = seed
 
         self.target_transform = getattr(self.clean_dataset, 'target_transform', None)
@@ -52,7 +52,7 @@ def symmetric_flip_noisy_mnist(
     ds = MNIST(root, train, transform, target_transform, download)
 
     noise_transition_matrix = np.eye(10) * (1 - noise_rate)
-    noise_transition_matrix = np.where(noise_transition_matrix == 0,
+    noise_transition_matrix = np.where(noise_transition_matrix != 0,
                                        noise_transition_matrix, noise_rate / 9)
 
     return LabelNoiseDataset(
