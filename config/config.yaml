@@ -1,8 +1,8 @@
 
 data:
   use_augmentations: yes
-  root: '/Users/paulwilson/data/mnist'
-  download: false
+  root: /home/paulw/data/mnist
+  download: true
   noise_rate: 0.95
   seed: 0
   batch_size: 32
