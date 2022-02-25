@@ -1,6 +1,5 @@
 
 from torch import nn 
-from .classifier import CNN
 
 from dataclasses import dataclass
 
@@ -15,8 +14,14 @@ def build_model(config: DictConfig):
             nn.Flatten(), 
             nn.Linear(28 * 28, 10)
         )
+    
+    elif config.type == 'paper_original_cnn':
+
+        from .orig_paper_model import CNN
+        return CNN(input_channel=1, n_outputs=10)
+
+    elif config.type == 'our_cnn':
         
-    elif config.type == 'cnn':
-        
+        from .classifier import CNN
         return CNN()
     
